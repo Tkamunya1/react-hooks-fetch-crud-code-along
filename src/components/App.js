@@ -1,20 +1,40 @@
-import React, { useState } from "react";
-import ShoppingList from "./ShoppingList";
-import Header from "./Header";
+import React from "react";
 
-function App() {
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  function handleDarkModeClick() {
-    setIsDarkMode((isDarkMode) => !isDarkMode);
+function Item({ item, onUpdatedItem, onDeleteItem}) {
+  function handleDeleteClick() {
+    fetch(`http://localhost:4000/items/${item.id}`, {
+      method: "DELETE",
+    })
+      .then((r) => r.json())
+      .then(() => onDeleteItem(item));
   }
 
-  return (
-    <div className={"App " + (isDarkMode ? "dark" : "light")}>
-      <Header isDarkMode={isDarkMode} onDarkModeClick={handleDarkModeClick} />
-      <ShoppingList />
-    </div>
-  );
-}
+  function handleAddToCartClick(){
+    fetch(`http://localhost:4000/items/${item.id}`,{
+      method:"PATCH",
+      headers:{
+        "Content-Type":"application/json",
+      },
+      body:JSON.stringify({
+        isInCart: !item.isInCart,
+      }),
+    })
+    .then((r)=>r.json())
+    .then((updatedItem) => onUpdatedItem(updatedItem));
+  }
 
-export default App;
+  
+  
+
+  return (
+    <li className={item.isInCart ? "in-cart" : ""}>
+      <span>{item.name}</span>
+      <span className="category">{item.category}</span>
+      <button className={item.isInCart ? "remove" : "add"} onClick={handleAddToCartClick}>
+        {item.isInCart ? "Remove From" : "Add to"} Cart
+      </button>
+      <button className="remove" onClick={handleDeleteClick}>Delete</button>
+    </li>
+  );
+  }
+export default Item;
